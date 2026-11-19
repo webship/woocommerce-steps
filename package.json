@@ -1,0 +1,68 @@
+{
+  "name": "@webship-js/woocommerce-steps",
+  "version": "2.0.0",
+  "description": "Cucumber step definitions for shops on WordPress with WooCommerce, a plugin for webship-js (Playwright and Cucumber): the product list (sorting, pages, categories, search), the product page (options, quantity, add to cart), the mini cart, the cart (quantities, removal, coupons, totals), the checkout as a guest and as a customer with the offline payments, the order confirmation, the customer's account (orders, addresses), the administration of products, orders and coupons, and the order e-mails. It brings @webship-js/wordpress-steps along for the login and the administration area.",
+  "main": "tests/step-definitions/woocommerce-defaults.js",
+  "files": [
+    "tests/step-definitions/",
+    "tests/features/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "cucumber-js --config cucumber.js",
+    "test:dry": "cucumber-js --config cucumber.js --dry-run",
+    "test:examples": "node tests/check-examples.js",
+    "test:paths": "node tests/check-paths.js",
+    "test:must-fail": "node tests/check-must-fail.js",
+    "test:chromium": "BROWSER=chromium cucumber-js --config cucumber.js",
+    "test:firefox": "BROWSER=firefox cucumber-js --config cucumber.js",
+    "test:webkit": "BROWSER=webkit cucumber-js --config cucumber.js",
+    "test:headed": "HEADLESS=false cucumber-js --config cucumber.js",
+    "generate-reports": "generate-reports",
+    "test:fast": "SLOW_MO=0 cucumber-js --config cucumber.js"
+  },
+  "keywords": [
+    "webship-js",
+    "woocommerce",
+    "wordpress",
+    "ecommerce",
+    "shop",
+    "cucumber",
+    "cucumber-js",
+    "playwright",
+    "bdd",
+    "gherkin",
+    "step-definitions",
+    "e2e-testing"
+  ],
+  "author": "Webship.co",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webship/woocommerce-steps.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webship/woocommerce-steps/issues"
+  },
+  "homepage": "https://github.com/webship/woocommerce-steps#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">= 20.0"
+  },
+  "dependencies": {
+    "@webship-js/wordpress-steps": "^2.2.4"
+  },
+  "peerDependencies": {
+    "webship-js": "^2.0.16"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.0",
+    "webship-js": "^2.0.16"
+  },
+  "overrides": {
+    "@cucumber/cucumber": "^12"
+  }
+}

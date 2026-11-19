@@ -1,0 +1,104 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - 2.0.x
+  pull_request:
+    branches:
+      - 2.0.x
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The runs of a pull request share a group, so a newer push cancels the run
+# it supersedes. Every other run (a push to 2.0.x, a run started by hand)
+# gets a group of its own: it is never queued behind another run, and never
+# cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  cucumber:
+    # The shop the build script makes: the latest WordPress with the latest WooCommerce from the plugin
+    # directory, its sample products, the default block theme, the offline payments.
+    name: woocommerce-steps test suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      HEADLESS: 'true'
+      FORCE_COLOR: '1'
+      SITE_DIR: ${{ github.workspace }}/../woocommerce-shop
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check the JSDoc examples and feature steps against the step regexes
+        run: npm run test:examples
+
+      - name: Check that a feature named on the command line runs alone
+        run: npm run test:paths
+
+      - name: Run cucumber-js dry-run (ambiguity / undefined step check)
+        run: npx cucumber-js --dry-run
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Install DDEV
+        uses: ddev/github-action-setup-ddev@v1
+        with:
+          autostart: false
+
+      - name: Build the test shop with DDEV
+        run: .github/scripts/build-ddev-site.sh
+
+      - name: Check the shop is the one cucumber.js runs against by default
+        run: |
+          DEFAULT_URL="$(LAUNCH_URL= node -e "console.log(require('./cucumber.js').default.worldParameters.launchUrl)")"
+          echo "Built: $LAUNCH_URL, default: $DEFAULT_URL"
+          test "${LAUNCH_URL%/}" = "$DEFAULT_URL"
+
+      - name: Run the test suite
+        run: npx cucumber-js
+
+      - name: Run the test suite again (it leaves the shop as it found it)
+        run: npx cucumber-js
+
+      - name: Run the assertions that must fail
+        run: npm run test:must-fail
+
+      - name: Show the log of the shop
+        if: failure()
+        run: (cd "$SITE_DIR" && ddev logs -s web --tail 200 || true)
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report
+          path: tests/reports/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload failure screenshots and videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots
+          path: |
+            screenshots/
+            videos/
+          retention-days: 14
+          if-no-files-found: ignore
