@@ -18,6 +18,7 @@ const {
   listed,
   addressOf,
   mailList,
+  mailOfOrderSent,
   mailTo,
   mailText,
   lastOrder,
@@ -39,8 +40,12 @@ Then(/^an email with the subject "([^"]*)" should be sent to "([^"]*)"$/, async 
 });
 
 /**
- * Assert the shop sent no e-mail to an address since the scenario began. The
- * step gives the shop a moment to send one first.
+ * Assert the shop sent no e-mail to an address since the scenario began. When
+ * the scenario placed an order, the step first waits for the shop to send that
+ * order's mail (the e-mail that names the order is in the mailbox, and the mail
+ * holds still), because the shop sends it, and an account's mail when the
+ * checkout makes an account, in the request that places the order. Without an
+ * order it reads the mailbox at once.
  *
  * Example #1: Then no email should be sent to "customer"
  * Example #2: And no email should be sent to "guest@example.com"
@@ -50,7 +55,9 @@ Then(/^an email with the subject "([^"]*)" should be sent to "([^"]*)"$/, async 
  */
 Then(/^no email should be sent to "([^"]*)"$/, async function (who) {
   const address = addressOf(this, who);
-  await this.page.waitForTimeout(2000);
+  // An absence holds once the shop has sent what it sends: after an order, its mail.
+  const orders = this.wooOrders || [];
+  if (orders.length) await mailOfOrderSent(this, orders[orders.length - 1]);
   let messages;
   try {
     messages = (await mailList(this, address)).filter((m) => Date.parse(m.Created) >= (this.wooScenarioStartedAt || 0) - 2000);

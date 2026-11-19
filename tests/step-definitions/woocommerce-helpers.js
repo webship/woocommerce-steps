@@ -503,6 +503,38 @@ function mailText(mail) {
   return clean(`${mail.text || ''} ${html}`);
 }
 
+/**
+ * Wait until the shop has sent the mail of an order the scenario placed: the
+ * mailbox holds an e-mail, sent since the scenario began, that names the order
+ * ("#<number>" in its subject or its first lines), and the mail of the scenario
+ * holds still between two readings (the shop sends an order's mail, and an
+ * account's when the checkout makes one, in the request that places it). It
+ * returns whether it saw that; it never fails, the step that calls it reads the
+ * mailbox itself.
+ */
+async function mailOfOrderSent(world, order) {
+  const since = (world.wooScenarioStartedAt || 0) - 2000;
+  const names = new RegExp(`#\\s*${String(order.number).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  const deadline = Date.now() + budget(world) * 3;
+  let seen = false;
+  let count = -1;
+  for (;;) {
+    try {
+      const response = await world.context.request.get(`${mailUrl(world)}/api/v1/messages?limit=50`, { failOnStatusCode: false, ignoreHTTPSErrors: true });
+      if (response.ok()) {
+        const messages = ((await response.json()).messages || []).filter((m) => Date.parse(m.Created) >= since);
+        if (seen && messages.length === count) return true;
+        seen = seen || messages.some((m) => names.test(`${m.Subject || ''} ${m.Snippet || ''}`));
+        count = messages.length;
+      }
+    } catch (err) {
+      // The mailbox is read again; the step that called reports a mailbox it cannot read.
+    }
+    if (Date.now() > deadline) return false;
+    await world.page.waitForTimeout(300);
+  }
+}
+
 module.exports = {
   budget,
   settle,
@@ -538,6 +570,7 @@ module.exports = {
   addressOf,
   mailUrl,
   mailList,
+  mailOfOrderSent,
   mailTo,
   mailText,
 };
