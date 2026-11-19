@@ -535,7 +535,24 @@ async function mailOfOrderSent(world, order) {
   }
 }
 
+/**
+ * A sentence for a failure when the browser shows its own error page
+ * (`chrome-error://…`) instead of the shop's answer: the request was cut
+ * before the shop answered, as Chromium does to every request in flight when
+ * the network of the machine changes (a container starting or stopping on
+ * it). An empty string otherwise.
+ */
+function cutRequest(world) {
+  const url = world && world.page ? world.page.url() : '';
+  return /^chrome-error:/.test(url) ? `the browser shows its own error page (${url}): the request was cut before the shop answered` : '';
+}
+
+/** The hint of a failure `cutRequest` explains. */
+const CUT_REQUEST_HINT = 'Nothing is wrong with the scenario: Chromium cuts every request in flight when the network of the machine changes (a container starting or stopping on it). Run the scenario again.';
+
 module.exports = {
+  CUT_REQUEST_HINT,
+  cutRequest,
   budget,
   settle,
   siteRoot,
