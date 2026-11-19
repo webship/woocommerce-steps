@@ -27,6 +27,8 @@ const {
   productOptions,
   productPagePrice,
   storeMessages,
+  cutRequest,
+  CUT_REQUEST_HINT,
 } = require('./woocommerce-helpers');
 
 /** The product page's add-to-cart form, or fail plainly. */
@@ -84,6 +86,8 @@ async function pressAddToCart(world) {
   }
   if (alertText) return { added: false, message: alertText };
   await settle(world);
+  const cut = cutRequest(world);
+  if (cut) return { added: false, cut: true, message: cut };
   const messages = await storeMessages(world);
   const error = messages.find((m) => m.kind === 'error');
   if (error) return { added: false, message: error.text };
@@ -180,7 +184,7 @@ When(/^(I |we )*add the product to the cart$/, async function (pronounCase) {
   if (!outcome.added) {
     throw friendly({
       message: `The store did not add the product to the cart: ${outcome.message}`,
-      hint: 'Choose every option of a variable product first (When I choose "Blue" for the product option "Color").',
+      hint: outcome.cut ? CUT_REQUEST_HINT : 'Choose every option of a variable product first (When I choose "Blue" for the product option "Color").',
     });
   }
 });
@@ -198,6 +202,9 @@ When(/^(I |we )*add the product to the cart$/, async function (pronounCase) {
  */
 Then(/^adding the product to the cart should be refused with "([^"]*)"$/, async function (text) {
   const outcome = await pressAddToCart(this);
+  if (outcome.cut) {
+    throw friendly({ message: `Expected the store to refuse the product with "${text}", but nothing reached it: ${outcome.message}.`, hint: CUT_REQUEST_HINT });
+  }
   if (outcome.added) {
     throw friendly({ message: `Expected the store to refuse the product with "${text}", but it added it: "${outcome.message}".`, hint: 'The store refuses a variable product until every option has a value.' });
   }

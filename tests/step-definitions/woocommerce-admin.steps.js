@@ -22,6 +22,8 @@ const {
   same,
   eventually,
   lastOrder,
+  cutRequest,
+  CUT_REQUEST_HINT,
 } = require('./woocommerce-helpers');
 
 const ORDERS_SCREEN = '/wp-admin/admin.php?page=wc-orders';
@@ -34,10 +36,13 @@ async function adminNotices(world) {
 
 /** Wait for a notice of the screen holding a text, or fail with the notices there are. */
 async function expectNotice(world, text, what) {
-  await eventually(world, () => adminNotices(world), (all) => all.some((n) => n.toLowerCase().includes(text.toLowerCase())), (all) => ({
-    message: `The screen did not confirm that ${what}: no notice "${text}". Its notices: ${listed(all || [])}.`,
-    hint: 'The administration confirms a change with a notice at the top of the screen.',
-  }), budget(world) * 3);
+  await eventually(world, () => adminNotices(world), (all) => all.some((n) => n.toLowerCase().includes(text.toLowerCase())), (all) => {
+    const cut = cutRequest(world);
+    return {
+      message: `The screen did not confirm that ${what}: no notice "${text}". ${cut ? `${cut.charAt(0).toUpperCase()}${cut.slice(1)}.` : `Its notices: ${listed(all || [])}.`}`,
+      hint: cut ? CUT_REQUEST_HINT : 'The administration confirms a change with a notice at the top of the screen.',
+    };
+  }, budget(world) * 3);
 }
 
 /**
