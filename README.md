@@ -46,7 +46,7 @@ must fail; see [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
 ## From nothing to a green run
 
-What the machine needs: Docker, [DDEV](https://ddev.com), git, python3, and Node.js 20 or later with npm. PHP, WP-CLI, the database and the mail catcher run in DDEV's containers.
+What the machine needs: Docker, [DDEV](https://ddev.com), git, python3, and Node.js 24 or later with npm. PHP, WP-CLI, the database and the mail catcher run in DDEV's containers.
 
 **1. The shop.** The pack's own build script (the one CI runs) makes the shop in a DDEV project of type `wordpress`: the latest WordPress, WooCommerce from the plugin directory (set up as a new shop is on its first visit, its onboarding wizard skipped, open to visitors), WooCommerce's own sample products, the default block theme with the mini cart in its header, the Cart and Checkout blocks, the offline payments (direct bank transfer, check payments, cash on delivery), one flat rate, no taxes, and the three accounts of [Test users](#test-users). It takes about two minutes.
 
@@ -161,7 +161,7 @@ Not tested: payment providers (only the offline methods, which need no account a
 
 ## Requirements
 
-- Node.js 20 or later
+- Node.js 24 or later
 - A webship-js 2.0 test project (webship-js 2.0.16 or later)
 - A shop on WordPress with WooCommerce, and accounts on it for the suite
 

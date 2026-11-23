@@ -50,7 +50,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">= 20.0"
+    "node": ">= 24.0"
   },
   "dependencies": {
     "@webship-js/wordpress-steps": "^2.2.4"
