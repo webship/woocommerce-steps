@@ -1,6 +1,6 @@
 {
   "name": "@webship-js/woocommerce-steps",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Cucumber step definitions for shops on WordPress with WooCommerce, a plugin for webship-js (Playwright and Cucumber): the product list (sorting, pages, categories, search), the product page (options, quantity, add to cart), the mini cart, the cart (quantities, removal, coupons, totals), the checkout as a guest and as a customer with the offline payments, the order confirmation, the customer's account (orders, addresses), the administration of products, orders and coupons, and the order e-mails. It brings @webship-js/wordpress-steps along for the login and the administration area.",
   "main": "tests/step-definitions/woocommerce-defaults.js",
   "files": [
